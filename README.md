@@ -124,7 +124,7 @@ vendor/bin/php-cs-fixer fix
 
 ## Testing
 
-Run tests:
+Run all tests:
 ```bash
 composer test
 ```
@@ -132,6 +132,22 @@ composer test
 Or using PHPUnit directly:
 ```bash
 vendor/bin/phpunit
+```
+
+Run with coverage (report in `build/coverage` and stdout):
+```bash
+vendor/bin/phpunit --coverage-text
+```
+
+Run only unit or feature tests:
+```bash
+vendor/bin/phpunit --testsuite=Unit
+vendor/bin/phpunit --testsuite=Feature
+```
+
+Run performance tests (tagged `@group performance`):
+```bash
+vendor/bin/phpunit --group=performance
 ```
 
 ## API Documentation
@@ -170,7 +186,7 @@ This project is being built in phases:
 - ✅ Phase 6: Authentication and Security
 - ✅ Phase 7: Scalability and 100k+ Seeder
 - ✅ Phase 8: OpenAPI, CDN, README
-- ⏳ Phase 9: Testing and Coverage
+- ✅ Phase 9: Testing and Coverage
 
 ## License
 
