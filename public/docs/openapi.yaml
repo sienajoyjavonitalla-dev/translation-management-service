@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: Translation Management Service API
+  description: API for managing translations across multiple locales with tagging and high-performance export.
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example: { "status": "ok", "timestamp": "2024-01-01T12:00:00.000000Z" }
+
+  /auth/login:
+    post:
+      summary: Login (get Bearer token)
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: admin@example.com }
+                password: { type: string, example: password }
+                device_name: { type: string, example: api }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              example: { "token": "...", "token_type": "Bearer", "user": { "id": 1, "name": "Admin", "email": "admin@example.com" } }
+        '401':
+          description: Invalid credentials
+        '422':
+          description: Validation error
+
+  /auth/logout:
+    post:
+      summary: Logout (revoke current token)
+      tags: [Auth]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Success
+        '401':
+          description: Unauthenticated
+
+  /export:
+    get:
+      summary: Export translations (public, for frontends e.g. Vue i18n)
+      tags: [Export]
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, example: en }
+          description: Locale code or id; omit for all locales
+        - name: nested
+          in: query
+          schema: { type: boolean, default: false }
+          description: Return nested object by dot-keys
+      responses:
+        '200':
+          description: JSON by locale (flat or nested)
+        '304':
+          description: Not Modified (use If-None-Match / If-Modified-Since)
+
+  /locales:
+    get:
+      summary: List locales
+      tags: [Locales]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200': { description: Paginated list (data + meta) }
+        '401': { description: Unauthenticated }
+    post:
+      summary: Create locale
+      tags: [Locales]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [code, name], properties: { code: { type: string }, name: { type: string } } }
+      responses:
+        '201': { description: Created }
+        '401': { description: Unauthenticated }
+        '422': { description: Validation error }
+
+  /locales/{id}:
+    get:
+      summary: Get locale
+      tags: [Locales]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+    put:
+      summary: Update locale
+      tags: [Locales]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { code: { type: string }, name: { type: string } } }
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+        '422': { description: Validation error }
+    delete:
+      summary: Delete locale
+      tags: [Locales]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '204': { description: Deleted }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+
+  /tags:
+    get:
+      summary: List tags
+      tags: [Tags]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200': { description: Paginated list }
+        '401': { description: Unauthenticated }
+    post:
+      summary: Create tag
+      tags: [Tags]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string } } }
+      responses:
+        '201': { description: Created }
+        '401': { description: Unauthenticated }
+        '422': { description: Validation error }
+
+  /tags/{id}:
+    get:
+      summary: Get tag
+      tags: [Tags]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+    put:
+      summary: Update tag
+      tags: [Tags]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { name: { type: string } } }
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+        '422': { description: Validation error }
+    delete:
+      summary: Delete tag
+      tags: [Tags]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '204': { description: Deleted }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+
+  /translations:
+    get:
+      summary: List translations (with filters)
+      tags: [Translations]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: locale
+          in: query
+          schema: { type: string }
+          description: Locale code or id
+        - name: tag
+          in: query
+          schema: { type: string }
+          description: Tag name or id
+        - name: key
+          in: query
+          schema: { type: string }
+          description: Search key
+        - name: content
+          in: query
+          schema: { type: string }
+          description: Search value
+      responses:
+        '200': { description: Paginated list (data + meta) }
+        '401': { description: Unauthenticated }
+    post:
+      summary: Create translation
+      tags: [Translations]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [locale_id, value]
+              properties:
+                key: { type: string, description: "Dot key (e.g. auth.login)" }
+                translation_key_id: { type: integer }
+                locale_id: { type: integer }
+                value: { type: string }
+                tag_ids: { type: array, items: { type: integer } }
+      responses:
+        '201': { description: Created }
+        '401': { description: Unauthenticated }
+        '422': { description: Validation error }
+
+  /translations/{id}:
+    get:
+      summary: Get translation
+      tags: [Translations]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+    put:
+      summary: Update translation
+      tags: [Translations]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key: { type: string }
+                translation_key_id: { type: integer }
+                locale_id: { type: integer }
+                value: { type: string }
+                tag_ids: { type: array, items: { type: integer } }
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+        '422': { description: Validation error }
+    delete:
+      summary: Delete translation
+      tags: [Translations]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '204': { description: Deleted }
+        '401': { description: Unauthenticated }
+        '404': { description: Not found }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Use the token returned from POST /auth/login

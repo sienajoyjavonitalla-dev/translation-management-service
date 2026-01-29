@@ -136,7 +136,27 @@ vendor/bin/phpunit
 
 ## API Documentation
 
-API documentation will be available at `/api/documentation` once OpenAPI/Swagger is configured (Phase 8).
+OpenAPI 3 (Swagger) documentation is available at:
+
+- **URL**: `/docs/` (e.g. `http://127.0.0.1:8000/docs/`)
+- **Spec**: `/docs/openapi.yaml`
+
+All endpoints (health, auth, locales, tags, translations, export) are documented with request/response examples and 401/422/500 responses.
+
+## CDN support (export endpoint)
+
+The **export** endpoint (`GET /api/v1/export`) is designed to be used by frontends (e.g. Vue i18n) and can be put behind a CDN.
+
+- **Headers**: Responses include `ETag`, `Last-Modified`, and `Cache-Control: public, max-age=0, must-revalidate` so CDNs and browsers can cache and revalidate.
+- **Recommendation**: Purge the export URL from your CDN when translations are updated (e.g. on deploy or via a webhook that runs after translation create/update/delete). The API invalidates its own cache on write so the next request returns fresh data; a CDN in front should be purged so edge caches don’t serve stale JSON.
+- **Optional**: Set a config or env value for the “export base URL” so the frontend points to the CDN URL (e.g. `https://cdn.example.com/export?locale=en`).
+
+## Design choices
+
+- **Schema**: Locales, tags, and translation keys are normalized in separate tables; translations are key+locale+value with a many-to-many pivot for tags. Indexes on `(locale_id, translation_key_id)`, `updated_at`, and full-text on key/value keep list and export fast.
+- **Cache**: Export responses are cached (Redis or file fallback); cache is invalidated on every translation create/update/delete so “always return updated” is satisfied.
+- **SOLID**: Controllers are thin (validate → service → JSON); business logic lives in `TranslationService`, `TranslationExportService`, `TranslationSearchService`; no external CRUD/translation libraries.
+- **Auth**: Laravel Sanctum token auth; protected routes use `auth:sanctum` and `throttle:60,1`; export and health remain public.
 
 ## Development Phases
 
@@ -149,7 +169,7 @@ This project is being built in phases:
 - ✅ Phase 5: Export and Performance
 - ✅ Phase 6: Authentication and Security
 - ✅ Phase 7: Scalability and 100k+ Seeder
-- ⏳ Phase 8: OpenAPI, CDN, README
+- ✅ Phase 8: OpenAPI, CDN, README
 - ⏳ Phase 9: Testing and Coverage
 
 ## License
