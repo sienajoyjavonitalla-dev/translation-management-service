@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+node_modules
+npm-debug.log
+yarn-error.log
+storage
+bootstrap/cache
+vendor
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.log
