@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\LocaleController;
+use App\Http\Controllers\Api\TagController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,13 +24,17 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    // Locales routes (Phase 3)
+    Route::apiResource('locales', LocaleController::class);
+
+    // Tags routes (Phase 3)
+    Route::apiResource('tags', TagController::class);
+
     // Public export endpoint (will be implemented in Phase 5)
     // Route::get('/export', [ExportController::class, 'index']);
 
     // Protected routes (will be implemented in Phase 6)
     // Route::middleware('auth:sanctum')->group(function () {
-    //     // Locales routes (Phase 3)
-    //     // Tags routes (Phase 3)
     //     // Translations routes (Phase 4)
     // });
 });

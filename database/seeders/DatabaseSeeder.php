@@ -11,6 +11,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seeders will be added in Phase 2
+        $this->call([
+            LocaleSeeder::class,
+            TagSeeder::class,
+        ]);
     }
 }
