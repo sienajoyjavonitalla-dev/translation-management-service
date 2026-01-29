@@ -85,6 +85,24 @@ php artisan key:generate
 php artisan migrate
 ```
 
+6. Seed initial data (locales, tags, admin user):
+```bash
+php artisan db:seed
+```
+
+### Scalability testing (100k+ records)
+
+To populate the database with a large dataset for performance testing:
+
+```bash
+php artisan translations:seed-large --count=100000
+```
+
+- **Options**: `--count=100000` (default), `--chunk=2000` (bulk insert chunk size), `--no-pivot` (skip attaching tags).
+- **Requires**: Locales and tags to exist (run `php artisan db:seed` first).
+- **Expected time**: Typically under 5 minutes for 100k translations (depends on DB and disk).
+- **Performance**: After seeding, list and export endpoints should remain within targets (<200ms list, <500ms export).
+
 ## Code Quality
 
 ### PSR-12 Compliance
@@ -125,12 +143,12 @@ API documentation will be available at `/api/documentation` once OpenAPI/Swagger
 This project is being built in phases:
 
 - ✅ Phase 1: Foundation (Laravel setup, Docker, PSR-12)
-- ⏳ Phase 2: Database Schema and Models
-- ⏳ Phase 3: Locales and Tags API
-- ⏳ Phase 4: Translations CRUD and Search
-- ⏳ Phase 5: Export and Performance
-- ⏳ Phase 6: Authentication and Security
-- ⏳ Phase 7: Scalability and 100k+ Seeder
+- ✅ Phase 2: Database Schema and Models
+- ✅ Phase 3: Locales and Tags API
+- ✅ Phase 4: Translations CRUD and Search
+- ✅ Phase 5: Export and Performance
+- ✅ Phase 6: Authentication and Security
+- ✅ Phase 7: Scalability and 100k+ Seeder
 - ⏳ Phase 8: OpenAPI, CDN, README
 - ⏳ Phase 9: Testing and Coverage
 
