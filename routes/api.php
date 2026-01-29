@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LocaleController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\TranslationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +30,9 @@ Route::prefix('v1')->group(function () {
 
     // Tags routes (Phase 3)
     Route::apiResource('tags', TagController::class);
+
+    // Translations routes (Phase 4)
+    Route::apiResource('translations', TranslationController::class);
 
     // Public export endpoint (will be implemented in Phase 5)
     // Route::get('/export', [ExportController::class, 'index']);
