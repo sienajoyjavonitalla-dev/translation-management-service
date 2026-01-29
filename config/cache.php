@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Str;
 
+$cacheStore = (string) env('CACHE_STORE', 'redis');
+
+// Local Windows/Laragon setups may not have ext-redis enabled even if CACHE_STORE=redis.
+// Fall back to file cache so Artisan commands (optimize:clear, etc.) don't crash.
+if ($cacheStore === 'redis' && !class_exists('Redis')) {
+    $cacheStore = 'file';
+}
+
 return [
 
     /*
@@ -10,7 +18,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'default' => env('CACHE_STORE', 'redis'),
+    'default' => $cacheStore,
 
     /*
     |--------------------------------------------------------------------------

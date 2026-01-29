@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\Api\ExportController;
 use App\Models\Translation;
 use App\Models\TranslationKey;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,8 @@ class TranslationService
                 $translation->tags()->sync($data['tag_ids'] ?? []);
             }
 
+            ExportController::forgetExportCache((int) $translation->locale_id);
+
             return $translation->load(['translationKey', 'locale', 'tags']);
         });
     }
@@ -45,6 +48,8 @@ class TranslationService
     public function update(Translation $translation, array $data): Translation
     {
         return DB::transaction(function () use ($translation, $data) {
+            $oldLocaleId = (int) $translation->locale_id;
+
             if (array_key_exists('translation_key_id', $data) || array_key_exists('key', $data)) {
                 $translation->translation_key_id = $this->resolveTranslationKeyId($data);
             }
@@ -63,13 +68,18 @@ class TranslationService
                 $translation->tags()->sync($data['tag_ids'] ?? []);
             }
 
+            ExportController::forgetExportCache($oldLocaleId);
+            ExportController::forgetExportCache((int) $translation->locale_id);
+
             return $translation->fresh()->load(['translationKey', 'locale', 'tags']);
         });
     }
 
     public function delete(Translation $translation): void
     {
+        $localeId = (int) $translation->locale_id;
         $translation->delete();
+        ExportController::forgetExportCache($localeId);
     }
 
     /**
