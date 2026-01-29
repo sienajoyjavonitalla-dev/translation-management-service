@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LocaleController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\TranslationController;
@@ -26,20 +27,23 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Locales routes (Phase 3)
-    Route::apiResource('locales', LocaleController::class);
-
-    // Tags routes (Phase 3)
-    Route::apiResource('tags', TagController::class);
-
-    // Translations routes (Phase 4)
-    Route::apiResource('translations', TranslationController::class);
-
     // Public export endpoint (Phase 5)
     Route::get('/export', [ExportController::class, 'index']);
 
-    // Protected routes (will be implemented in Phase 6)
-    // Route::middleware('auth:sanctum')->group(function () {
-    //     // Translations routes (Phase 4)
-    // });
+    // Auth (Phase 6)
+    Route::post('/auth/login', [AuthController::class, 'login']);
+
+    // Protected routes (Phase 6)
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Locales routes (Phase 3)
+        Route::apiResource('locales', LocaleController::class);
+
+        // Tags routes (Phase 3)
+        Route::apiResource('tags', TagController::class);
+
+        // Translations routes (Phase 4)
+        Route::apiResource('translations', TranslationController::class);
+    });
 });
